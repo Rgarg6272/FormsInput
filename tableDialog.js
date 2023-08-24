@@ -4,11 +4,13 @@ import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import Modal from "@material-ui/core/Modal";
-import { Button } from "@material-ui/core";
+import MaterialTable from "material-table";
+import { Button, Paper } from "@material-ui/core";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
+import Radio from "@material-ui/core/Radio";
+import SearchDialog from "./SearchDialog";
 import TextField from "@material-ui/core/TextField";
-import TableDialog from "./TableDialog";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -51,33 +53,115 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DelegatedDialog = ({
-  handleCloseDialog,
-  handleReplaceClick,
-  dialogSelectedRow,
-}) => {
+const TableDialog = ({ handleAddRow, selectedRowData }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(true);
-
-  //const [selectedRow, setSelectedRow] = useState(null);
-
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+
+  const [tableData, setTableData] = useState([
+    {
+      delegate: "PMS",
+      contacttype: "Care Team",
+      contactname: "Smith, John",
+      cellphone: 179458399,
+      workphone: 788437943,
+      email: "test1@gmail.com",
+      preferred: "Cell Phone",
+    },
+    {
+      delegate: "Health Home",
+      contacttype: "Care Link",
+      contactname: "Tessa, Adam",
+      cellphone: 179458387,
+      workphone: 788437956,
+      email: "test2@gmail.com",
+      preferred: "Work phone",
+    },
+    {
+      delegate: "PMS",
+      contacttype: "Delegated",
+      contactname: "Levi, mark",
+      cellphone: 179458367,
+      workphone: 788437964,
+      email: "test3@gmail.com",
+      preferred: "Work Phone",
+    },
+  ]);
+  const columns = [
+    {
+      field: "radio",
+      title: "",
+      render: (rowData) => (
+        <Radio
+          checked={selectedRow === rowData}
+          onClick={() => handleRowSelection(rowData)}
+        />
+      ),
+    },
+    {
+      title: "Delegate",
+      field: "delegate",
+      align: "center",
+    },
+    {
+      title: "Contact Type",
+      field: "contacttype",
+      align: "center",
+    },
+    {
+      title: "Contact Name",
+      field: "contactname",
+      align: "center",
+    },
+    {
+      title: "Cell Phone",
+      field: "cellphone",
+      align: "center",
+    },
+    {
+      title: "Work Phone",
+      field: "workphone",
+      align: "center",
+    },
+    {
+      title: "Email",
+      field: "email",
+      align: "center",
+    },
+    {
+      title: "Preferred",
+      field: "preferred",
+      align: "center",
+    },
+  ];
+
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const handleRowSelection = (rowData) => {
+    console.log("selected row data", rowData);
+    setSelectedRow(selectedRow === rowData ? null : rowData);
+  };
 
   const handleClose = () => {
     setOpen(false);
-    handleCloseDialog();
   };
 
-  const handleOpenTableDialog = () => {
-    console.log("Hey MF");
-    setSearchDialogOpen(true);
+  const handleAssign = () => {
+    console.log("Hey");
     setOpen(false);
+    setSearchDialogOpen(true);
+    handleAddRow(selectedRowData);
   };
 
-  const assignContact = (
+  const body = (
     <>
       <Grid container>
-        <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+        <Dialog
+          open={open}
+          onClose={() => setSearchDialogOpen(false)}
+          maxWidth="lg"
+          fullWidth
+        >
           <DialogContent style={{ paddingTop: 0 }}>
             <Grid container className={classes.typoHeaderContainer}>
               <Grid item xs={8}>
@@ -114,35 +198,73 @@ const DelegatedDialog = ({
                       borderRadius: 0,
                       textTransform: "capitalize",
                     }}
-                    onClick={handleOpenTableDialog}
                   >
                     Search Contact
                   </Button>
                 </form>
               </Grid>
             </Grid>
+            <Grid container>
+              <Grid item xs={12}>
+                <Paper elevation={0} className={classes.contentPaper}>
+                  <div className={classes.customToolbar}>
+                    <MaterialTable
+                      columns={columns}
+                      data={tableData}
+                      title=""
+                      options={{ search: false, pageSize: 3 }}
+                      onSelectionChange={(rows) =>
+                        setSelectedRow(rows.length > 0 ? rows[0] : null)
+                      }
+                    />
+                  </div>
+                </Paper>
+              </Grid>
+            </Grid>
           </DialogContent>
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+              style={{
+                display: "flex",
+                justifyContent: "end",
+                marginRight: "30px",
+                paddingBottom: "4px",
+              }}
+            >
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{
+                  borderRadius: 0,
+                  height: "27px",
+                  textTransform: "capitalize",
+                }}
+                onClick={handleAssign}
+              >
+                Assign
+              </Button>
+            </Grid>
+          </Grid>
         </Dialog>
       </Grid>
     </>
   );
-
   return (
-    <React.Fragment>
-      <div>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="simple-modal-title"
-          aria-describedby="simple-modal-description"
-          className={classes.modal}
-        >
-          {assignContact}
-        </Modal>
-        {searchDialogOpen && <TableDialog />}
-      </div>
-    </React.Fragment>
+    <div>
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+        className={classes.modal}
+      >
+        {body}
+      </Modal>
+      {searchDialogOpen && <SearchDialog />}
+    </div>
   );
 };
 
-export default DelegatedDialog;
+export default TableDialog;
